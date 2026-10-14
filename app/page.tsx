@@ -1,5 +1,6 @@
 import Image from "next/image";
 import SiteNav from "@/components/site-nav";
+import MotionRoot from "@/components/motion/motion-root";
 
 /* ------------------------------------------------------------------ */
 /* Links                                                               */
@@ -122,6 +123,9 @@ const education = [
     period: "Aug 2024 – May 2027",
     scoreLabel: "CGPA",
     score: "9.13",
+    count: 9.13,
+    decimals: 2,
+    suffix: "",
   },
   {
     degree: "Diploma in Computer Engineering",
@@ -130,6 +134,9 @@ const education = [
     period: "Jun 2021 – May 2024",
     scoreLabel: "Percentage",
     score: "87.77%",
+    count: 87.77,
+    decimals: 2,
+    suffix: "%",
   },
   {
     degree: "Secondary School Certificate (SSC)",
@@ -138,6 +145,9 @@ const education = [
     period: "Jun 2020 – Apr 2021",
     scoreLabel: "Percentage",
     score: "87.40%",
+    count: 87.4,
+    decimals: 2,
+    suffix: "%",
   },
 ];
 
@@ -172,7 +182,7 @@ function SectionHead({
   title: string;
 }) {
   return (
-    <header className="mb-12 lg:mb-16">
+    <header className="reveal mb-12 lg:mb-16">
       <p className="micro-cap text-mute">
         {index} · {kicker}
       </p>
@@ -205,11 +215,12 @@ export default function Home() {
     <>
       <SiteNav resumeHref={LINKS.resume} />
 
-      <main>
+      <MotionRoot>
+        <main>
         {/* ================= HERO — full-viewport band ================= */}
         <section id="home" className="band overflow-hidden">
           {/* Portrait, full-bleed off the left edge (desktop) */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[40vw] max-w-[600px] lg:block">
+          <div className="hero-portrait pointer-events-none absolute inset-y-0 left-0 hidden w-[40vw] max-w-[600px] lg:block">
             <Image
               src="/me.JPG"
               alt=""
@@ -221,24 +232,28 @@ export default function Home() {
           </div>
 
           <div className="wrap relative flex min-h-[92svh] flex-col justify-center pb-16 pt-32 lg:min-h-[100svh] lg:pb-24 lg:pt-40">
-            <div className="max-w-[720px] lg:ml-auto lg:max-w-[540px]">
-              <p className="micro-cap text-mute">Pune, Maharashtra, India</p>
+            <div className="hero-copy max-w-[720px] lg:ml-auto lg:max-w-[540px]">
+              <p className="hero-anim micro-cap text-mute">
+                Pune, Maharashtra, India
+              </p>
 
-              <h1 className="display-xxl mt-6 text-white">Vivek Patil</h1>
+              <h1 className="hero-anim display-xxl mt-6 text-white">
+                Vivek Patil
+              </h1>
 
               {/* Total experience — emphasized with a hairline rule and the
                   display tier, per DESIGN.md (monochrome, no accent color) */}
-              <div className="mt-7 flex items-baseline gap-x-5 border-t border-hairline pt-5">
+              <div className="hero-anim mt-7 flex items-baseline gap-x-5 border-t border-hairline pt-5">
                 <p className="display-md text-white">1Y 4M</p>
                 <p className="micro-cap text-mute">Total Experience</p>
               </div>
 
-              <p className="body-lg mt-8 max-w-[560px] text-white/75">
+              <p className="hero-anim body-lg mt-8 max-w-[560px] text-white/75">
                 Software Developer Intern at Veltos AI, Pune. B.E. in Computer
                 Engineering from RMD Sinhgad School of Engineering, 9.13 CGPA.
               </p>
 
-              <div className="mt-10">
+              <div className="hero-anim mt-10">
                 <a className="btn-ghost" href={LINKS.resume} download>
                   Download CV
                 </a>
@@ -246,7 +261,7 @@ export default function Home() {
             </div>
 
             {/* Portrait (mobile / tablet) */}
-            <div className="relative mt-12 h-[340px] sm:h-[420px] lg:hidden">
+            <div className="hero-portrait relative mt-12 h-[340px] sm:h-[420px] lg:hidden">
               <Image
                 src="/me.JPG"
                 alt="Vivek Patil - Software Developer"
@@ -268,7 +283,7 @@ export default function Home() {
               {experience.map((job) => (
                 <article
                   key={job.title}
-                  className="grid gap-6 border-b border-hairline py-10 lg:grid-cols-[190px_1fr] lg:gap-12"
+                  className="reveal grid gap-6 border-b border-hairline py-10 lg:grid-cols-[190px_1fr] lg:gap-12"
                 >
                   <div className="flex flex-wrap items-baseline gap-4 lg:block">
                     <p className="micro-cap text-mute">{job.period}</p>
@@ -316,7 +331,7 @@ export default function Home() {
               {projects.map((project) => (
                 <article
                   key={project.title}
-                  className="grid gap-6 border-b border-hairline py-10 lg:grid-cols-[1fr_240px] lg:gap-12"
+                  className="reveal grid gap-6 border-b border-hairline py-10 lg:grid-cols-[1fr_240px] lg:gap-12"
                 >
                   <div>
                     <h3 className="display-lg text-white">{project.title}</h3>
@@ -359,7 +374,7 @@ export default function Home() {
 
             <div className="grid gap-12 lg:grid-cols-2 lg:gap-x-16">
               {skillGroups.map((group) => (
-                <div key={group.title}>
+                <div key={group.title} className="reveal">
                   <h3 className="micro-cap eyebrow-rule text-mute">{group.title}</h3>
                   <ul className="mt-5 flex flex-wrap gap-3">
                     {group.items.map((item) => (
@@ -381,7 +396,7 @@ export default function Home() {
 
             <div className="grid gap-5 md:grid-cols-3">
               {education.map((item) => (
-                <article key={item.degree} className="surface flex flex-col">
+                <article key={item.degree} className="surface reveal flex flex-col">
                   <p className="micro-cap text-mute">{item.period}</p>
                   <h3 className="display-md mt-4 text-white">{item.degree}</h3>
                   <p className="body-md mt-4 text-white/75">{item.school}</p>
@@ -389,7 +404,12 @@ export default function Home() {
 
                   <div className="mt-auto flex items-baseline justify-between gap-4 border-t border-hairline pt-6">
                     <span className="micro-cap text-mute">{item.scoreLabel}</span>
-                    <span className="text-2xl font-bold tabular-nums text-white">
+                    <span
+                      className="text-2xl font-bold tabular-nums text-white"
+                      data-count={item.count}
+                      data-decimals={item.decimals}
+                      data-suffix={item.suffix}
+                    >
                       {item.score}
                     </span>
                   </div>
@@ -412,7 +432,7 @@ export default function Home() {
               {achievements.map((item, i) => (
                 <li
                   key={item}
-                  className="flex items-baseline gap-6 border-b border-hairline py-6"
+                  className="reveal flex items-baseline gap-6 border-b border-hairline py-6"
                 >
                   <span className="micro-cap w-8 shrink-0 text-mute">
                     {String(i + 1).padStart(2, "0")}
@@ -428,7 +448,7 @@ export default function Home() {
         <section id="positions" className="band band--ruled section-space">
           <div className="wrap grid gap-6 lg:grid-cols-[240px_1fr] lg:gap-12">
             <p className="micro-cap text-mute">Positions of Responsibility</p>
-            <div>
+            <div className="reveal">
               <h2 className="display-lg text-white">Head of TECH CLUB</h2>
               <p className="body-lg mt-4 text-white/75">
                 RMD Sinhgad School of Engineering, Warje
@@ -446,7 +466,7 @@ export default function Home() {
               {certifications.map((item) => (
                 <li
                   key={item.name}
-                  className="flex flex-col gap-2 border-b border-hairline py-6 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8"
+                  className="reveal flex flex-col gap-2 border-b border-hairline py-6 sm:flex-row sm:items-baseline sm:justify-between sm:gap-8"
                 >
                   <span className="body-lg text-white">{item.name}</span>
                   <span className="micro-cap shrink-0 text-mute">
@@ -457,21 +477,21 @@ export default function Home() {
             </ul>
           </div>
         </section>
-      </main>
+        </main>
 
-      {/* ================= CONTACT / FOOTER ================= */}
-      <footer id="contact" className="band band--ruled section-space">
+        {/* ================= CONTACT / FOOTER ================= */}
+        <footer id="contact" className="band band--ruled section-space">
         <div className="wrap">
           <p className="micro-cap text-mute">08 · Contact</p>
-          <h2 className="display-xl mt-2 text-white">Get in touch</h2>
+          <h2 className="display-xl reveal mt-2 text-white">Get in touch</h2>
 
-          <div className="mt-10">
+          <div className="reveal mt-10">
             <a className="btn-ghost" href={LINKS.email}>
               {LINKS.emailText}
             </a>
           </div>
 
-          <div className="mt-14 grid gap-8 border-t border-hairline pt-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="reveal mt-14 grid gap-8 border-t border-hairline pt-8 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <p className="micro-cap text-mute">Phone</p>
               <a className="link body-md mt-2 inline-block" href={LINKS.phone}>
@@ -522,6 +542,7 @@ export default function Home() {
           </div>
         </div>
       </footer>
+      </MotionRoot>
     </>
   );
 }

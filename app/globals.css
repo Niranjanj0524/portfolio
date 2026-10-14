@@ -2,18 +2,28 @@
 
 /* =================================================================
    DESIGN.md — monochrome dark system
-   canvas-night #000 · canvas-night-soft #0a0a0a
-   on-primary #fff · on-primary-mute #f0f0fa · hairline-on-dark #3a3a3f
-   No accent colors. No shadows. No gradients. No motion.
+   canvas off-black #0a0a0a · canvas-soft #111113
+   on-primary #fff · on-primary-mute #f0f0fa · silver #c0c0c0
+   hairline #3a3a3f
+   No accent colors. No gradients.
+   Motion: transform + opacity only, 540ms entries / 120ms stagger.
    ================================================================= */
 
 @theme inline {
-  --color-background: #000000;
+  --color-background: #0a0a0a;
   --color-foreground: #ffffff;
   --color-mute: #f0f0fa;
+  --color-silver: #c0c0c0;
   --color-hairline: #3a3a3f;
-  --color-soft: #0a0a0a;
+  --color-soft: #111113;
   --font-sans: var(--font-inter, Arial, Verdana, sans-serif);
+
+  /* z-index contract — DESIGN.md §Layout */
+  --z-base: 0;
+  --z-sticky-nav: 100;
+  --z-overlay: 200;
+  --z-modal: 300;
+  --z-toast: 500;
 }
 
 @layer base {
@@ -24,7 +34,7 @@
   }
 
   body {
-    background-color: #000000;
+    background-color: var(--color-background);
     color: #ffffff;
     font-family: var(--font-sans, Arial, Verdana, sans-serif);
     font-size: 16px;
@@ -35,7 +45,7 @@
 
   ::selection {
     background-color: #ffffff;
-    color: #000000;
+    color: #0a0a0a;
   }
 
   a {
@@ -204,11 +214,11 @@
   .band {
     position: relative;
     width: 100%;
-    background-color: #000000;
+    background-color: var(--color-background);
   }
 
   .band--soft {
-    background-color: #0a0a0a;
+    background-color: var(--color-soft);
   }
 
   .band--ruled {
@@ -251,7 +261,7 @@
     padding: 18px 24px;
     border: 1px solid #ffffff;
     border-radius: 32px;
-    background-color: #000000;
+    background-color: var(--color-background);
     color: #ffffff;
     font-size: 13px;
     line-height: 0.94;
@@ -261,13 +271,22 @@
     text-align: center;
     cursor: pointer;
     transition:
-      background-color 0.15s ease,
-      color 0.15s ease;
+      background-color 0.2s ease,
+      color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
+  /* Hover states — DESIGN.md: scale(1.03) + shadow lift over 200ms */
   .btn-ghost:hover {
     background-color: #ffffff;
-    color: #000000;
+    color: #0a0a0a;
+    transform: scale(1.03);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .btn-ghost:active {
+    transform: scale(1.03) translateY(-1px);
   }
 
   .btn-ghost:focus-visible {
@@ -284,26 +303,78 @@
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 4px;
-    transition: color 0.15s ease;
+    transition:
+      color 0.2s ease,
+      opacity 0.2s ease;
   }
 
   .link:hover {
-    color: #f0f0fa;
+    color: #c0c0c0;
   }
 
   /* ---------------------------------------------------------------
-     Surfaces — flat, 1px hairline, 8px radius (no shadow, no blur)
+     Reveal — entry animation base state (DESIGN.md §Elevation)
+     Fade + translate-Y 16px → 0 over 540ms ease-out, 120ms stagger.
+
+     Hidden ONLY when `.js` is on <html> (set by an inline script in
+     layout.tsx, which runs before first paint). So:
+       - no JS  → never hidden, content stays readable
+       - JS     → hidden at first paint (no flash), MotionRoot's
+                  gsap.to() walks it to opacity 1 / y 0
+     MotionRoot uses gsap.to, never gsap.from — the CSS start state
+     IS the "from". No transition here: GSAP owns the interpolation.
+     --------------------------------------------------------------- */
+
+  .js .reveal,
+  .js .hero-anim {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  /* Reduced motion — content must be readable with zero animation.
+     !important beats any inline style GSAP may have written. */
+  @media (prefers-reduced-motion: reduce) {
+    .js .reveal,
+    .js .hero-anim {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+
+    .surface:hover,
+    .chip:hover,
+    .btn-ghost:hover,
+    .btn-ghost:active {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
+  /* ---------------------------------------------------------------
+     Surfaces — 1px hairline, 0.5rem radius, shadow-lift
+     DESIGN.md §Components: card shadow 0 2px 12px rgba(0,0,0,.06)
      --------------------------------------------------------------- */
 
   .surface {
     border: 1px solid #3a3a3f;
     border-radius: 8px;
-    background-color: #0a0a0a;
+    background-color: var(--color-soft);
     padding: 32px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    /* hover states: scale(1.03) + shadow lift over 200ms */
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .surface:hover {
+    transform: scale(1.03);
+    border-color: #c0c0c0;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   }
 
   .band--soft .surface {
-    background-color: #000000;
+    background-color: var(--color-background);
   }
 
   .chip {
@@ -311,18 +382,21 @@
     align-items: center;
     gap: 8px;
     border: 1px solid #3a3a3f;
-    border-radius: 8px;
+    border-radius: 4px;
     padding: 6px 12px;
-    background-color: #000000;
+    background-color: var(--color-background);
     color: #f0f0fa;
     font-size: 14px;
     line-height: 1.5;
     letter-spacing: 0.32px;
-    transition: border-color 0.15s ease;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
   }
 
   .chip:hover {
-    border-color: #ffffff;
+    border-color: #c0c0c0;
+    transform: scale(1.03);
   }
 
   .rule {

@@ -62,7 +62,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Runs before first paint so .reveal starts hidden only when JS
+           can actually reveal it. No JS → no .js → content stays visible. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.classList.add('js');` +
+              /* Failsafe: if MotionRoot never boots (GSAP failed to
+                 load or threw), un-hide everything after 4s. */
+              `setTimeout(function(){if(!document.querySelector('[data-gsap]'))document.documentElement.classList.remove('js')},4000)`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         {/* SEO.md §12 Person · §13 WebSite — server-rendered JSON-LD */}
         <script

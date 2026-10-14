@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 
 /* nav-bar-overlay — fixed top nav, transparent over the black canvas.
    Background {colors.canvas-night}, text {colors.on-primary},
    items {typography.button-cap} / {typography.micro-cap} (uppercase).
-   Collapses to a hamburger below 768px (menu keeps the dark treatment). */
+   Collapses to a hamburger below 768px (menu keeps the dark treatment).
+
+   z-index follows the DESIGN.md contract: sticky-nav = 100.
+   Active item uses a white underline — DESIGN.md specifies an accent
+   color indicator, but the palette is monochrome, so white is it. */
 
 const NAV_ITEMS = [
   { id: "experience", label: "Experience" },
@@ -32,14 +36,39 @@ const jump = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
 
 export default function SiteNav({ resumeHref }: { resumeHref: string }) {
   const [open, setOpen] = useState(false);
+  const [active, setActive] = useState("home");
+
+  /* Active-section indicator: the section whose top has most recently
+     crossed the nav line owns the underline. */
+  useEffect(() => {
+    const ids = [...ALL_ITEMS.map((item) => item.id), "home"];
+    const nodes = ids
+      .map((id) => document.getElementById(id))
+      .filter((node): node is HTMLElement => node !== null);
+    if (nodes.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      },
+      { rootMargin: "-72px 0px -70% 0px", threshold: 0 }
+    );
+
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-hairline bg-background">
+    <header className="fixed inset-x-0 top-0 z-[100] border-b border-hairline bg-background">
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-6 py-4 lg:px-8">
         <a
           href="#home"
           onClick={(event) => jump(event, "home")}
-          className="button-cap text-[15px] text-white"
+          className={`button-cap text-[15px] ${
+            active === "home" ? "text-white" : "text-mute"
+          }`}
         >
           Vivek Patil
         </a>
@@ -51,9 +80,19 @@ export default function SiteNav({ resumeHref }: { resumeHref: string }) {
               key={item.id}
               href={`#${item.id}`}
               onClick={(event) => jump(event, item.id)}
-              className="micro-cap text-mute transition-colors duration-150 hover:text-white"
+              aria-current={active === item.id ? "true" : undefined}
+              className={`micro-cap relative transition-colors duration-200 hover:text-white ${
+                active === item.id ? "text-white" : "text-mute"
+              }`}
             >
               {item.label}
+              {/* Active indicator — underline draws in over 200ms */}
+              <span
+                aria-hidden="true"
+                className={`absolute -bottom-1 left-0 h-px w-full origin-left bg-white transition-transform duration-200 ${
+                  active === item.id ? "scale-x-100" : "scale-x-0"
+                }`}
+              />
             </a>
           ))}
         </nav>
@@ -90,35 +129,43 @@ export default function SiteNav({ resumeHref }: { resumeHref: string }) {
         </div>
       </div>
 
-      {/* Mobile menu — dark overlay treatment */}
-      {open && (
-        <nav
-          aria-label="Sections"
-          className="border-b border-hairline bg-background px-6 pb-6 pt-2 lg:hidden"
-        >
-          {ALL_ITEMS.map((item) => (
-            <a
-              key={item.id}
-              href={`#${item.id}`}
-              onClick={(event) => {
-                jump(event, item.id);
-                setOpen(false);
-              }}
-              className="micro-cap block w-full border-b border-hairline py-3 text-left text-mute transition-colors duration-150 hover:text-white"
-            >
-              {item.label}
-            </a>
-          ))}
+      {/* Mobile menu — dark overlay treatment.
+          Page transition: fade + slide, 300ms (DESIGN.md §Elevation).
+          Always mounted so it can animate out; visibility handles the
+          a11y/display part, transform+opacity only. */}
+      <nav
+        aria-label="Sections"
+        aria-hidden={!open}
+        className={`border-b border-hairline bg-background px-6 pb-6 pt-2 transition-[opacity,transform] duration-300 ease-out lg:hidden ${
+          open
+            ? "visible translate-y-0 opacity-100"
+            : "invisible -translate-y-2 opacity-0"
+        }`}
+      >
+        {ALL_ITEMS.map((item) => (
           <a
-            href={resumeHref}
-            download
-            className="btn-ghost mt-6 w-full"
-            onClick={() => setOpen(false)}
+            key={item.id}
+            href={`#${item.id}`}
+            onClick={(event) => {
+              jump(event, item.id);
+              setOpen(false);
+            }}
+            tabIndex={open ? 0 : -1}
+            className="micro-cap block w-full border-b border-hairline py-3 text-left text-mute transition-colors duration-200 hover:text-white"
           >
-            Download CV
+            {item.label}
           </a>
-        </nav>
-      )}
+        ))}
+        <a
+          href={resumeHref}
+          download
+          className="btn-ghost mt-6 w-full"
+          tabIndex={open ? 0 : -1}
+          onClick={() => setOpen(false)}
+        >
+          Download CV
+        </a>
+      </nav>
     </header>
   );
 }

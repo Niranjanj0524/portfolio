@@ -1,10 +1,9 @@
-import type { MetadataRoute } from "next";
 import { SITE_URL, isProduction } from "@/lib/seo";
 
 /* SEO.md §8 — only publicly accessible, indexable URLs.
-   The site is a single page (app/page.tsx); there are no other routes.
+   The site is a single page (app/page.jsx); there are no other routes.
    Previews publish nothing so they never compete with production. */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default function sitemap() {
   if (!isProduction) return [];
 
   return [

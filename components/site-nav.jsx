@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 
 /* nav-bar-overlay — fixed top nav, transparent over the black canvas.
    Background {colors.canvas-night}, text {colors.on-primary},
@@ -21,20 +21,17 @@ const NAV_ITEMS = [
 
 const ALL_ITEMS = [
   ...NAV_ITEMS.slice(0, 4),
-  { id: "achievements", label: "Achievements" },
-  { id: "positions", label: "Responsibility" },
-  { id: "certifications", label: "Certifications" },
   { id: "contact", label: "Contact" },
 ];
 
 /* SEO.md §17 — nav items are real fragment links (crawlable, work without
    JS). With JS we preventDefault so the existing smooth scroll still runs. */
-const jump = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+const jump = (event, id) => {
   event.preventDefault();
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 };
 
-export default function SiteNav({ resumeHref }: { resumeHref: string }) {
+export default function SiteNav({ resumeHref }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("home");
 
@@ -42,9 +39,7 @@ export default function SiteNav({ resumeHref }: { resumeHref: string }) {
      crossed the nav line owns the underline. */
   useEffect(() => {
     const ids = [...ALL_ITEMS.map((item) => item.id), "home"];
-    const nodes = ids
-      .map((id) => document.getElementById(id))
-      .filter((node): node is HTMLElement => node !== null);
+    const nodes = ids.map((id) => document.getElementById(id)).filter((node) => node !== null);
     if (nodes.length === 0) return;
 
     const observer = new IntersectionObserver(
@@ -62,7 +57,7 @@ export default function SiteNav({ resumeHref }: { resumeHref: string }) {
 
   return (
     <header className="fixed inset-x-0 top-0 z-[100] border-b border-hairline bg-background">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-6 px-6 py-4 lg:px-8">
+      <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-6 px-5 py-4 sm:px-8">
         <a
           href="#home"
           onClick={(event) => jump(event, "home")}
@@ -70,7 +65,7 @@ export default function SiteNav({ resumeHref }: { resumeHref: string }) {
             active === "home" ? "text-white" : "text-mute"
           }`}
         >
-          Vivek Patil
+          Niranjan Jagtap
         </a>
 
         {/* Desktop nav items */}
@@ -132,11 +127,16 @@ export default function SiteNav({ resumeHref }: { resumeHref: string }) {
       {/* Mobile menu — dark overlay treatment.
           Page transition: fade + slide, 300ms (DESIGN.md §Elevation).
           Always mounted so it can animate out; visibility handles the
-          a11y/display part, transform+opacity only. */}
+          a11y/display part, transform+opacity only.
+
+          `absolute top-full` is load-bearing: the header is fixed, so an
+          in-flow menu would inflate the header box even while invisible
+          (visibility:hidden keeps layout space) and blank out the hero.
+          Absolutely positioned it overlays the page below the 72px bar. */}
       <nav
         aria-label="Sections"
         aria-hidden={!open}
-        className={`border-b border-hairline bg-background px-6 pb-6 pt-2 transition-[opacity,transform] duration-300 ease-out lg:hidden ${
+        className={`absolute inset-x-0 top-full border-b border-hairline bg-background px-5 pb-6 pt-2 transition-[opacity,transform] duration-300 ease-out sm:px-8 lg:hidden ${
           open
             ? "visible translate-y-0 opacity-100"
             : "invisible -translate-y-2 opacity-0"

@@ -2,40 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 
-export type SpotlightShape = 'circle' | 'beam';
-
-export type SpotlightCardProps = React.HTMLAttributes<HTMLDivElement> & {
-  spotlightColor?: string;
-  intensity?: number;
-  spotlightSize?: number;
-  softness?: number;
-  shape?: SpotlightShape;
-  borderGlow?: number;
-  proximity?: number;
-  smoothing?: number;
-  ambient?: boolean;
-  flare?: boolean;
-  grain?: number;
-  theme?: 'dark' | 'light';
-};
-
-type Palette = { surface: string; border: string; shadow: string; light: string; fill: number; edge: number };
-
-type Settings = {
-  shape: SpotlightShape;
-  fill: string;
-  edge: string;
-  size: number;
-  intensity: number;
-  borderGlow: number;
-  proximity: number;
-  smoothing: number;
-  ambient: boolean;
-  flare: boolean;
-  grain: number;
-};
-
-const THEMES: Record<'dark' | 'light', Palette> = {
+const THEMES = {
   dark: {
     surface: '#111111',
     border: 'rgba(255, 255, 255, 0.08)',
@@ -54,17 +21,17 @@ const THEMES: Record<'dark' | 'light', Palette> = {
   }
 };
 
-const SHAPES: SpotlightShape[] = ['circle', 'beam'];
+const SHAPES = ['circle', 'beam'];
 
 const NOISE =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-const falloff = (color: string, softness: number) => {
+const falloff = (color, softness) => {
   const soft = clamp(softness, 0, 1);
   const core = (1 - soft) ** 1.5 * 0.85;
-  const stop = (alpha: number, at: number) =>
+  const stop = (alpha, at) =>
     `color-mix(in srgb, ${color} ${(alpha * 100).toFixed(2)}%, transparent) ${(at * 100).toFixed(2)}%`;
   const list = [stop(1, 0)];
   for (let i = 0; i <= 14; i++) {
@@ -97,16 +64,16 @@ const SpotlightCard = ({
   grain = 0,
   theme = 'dark',
   ...rest
-}: SpotlightCardProps) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const lightRef = useRef<HTMLSpanElement>(null);
-  const grainRef = useRef<HTMLSpanElement>(null);
-  const edgeRef = useRef<HTMLSpanElement>(null);
-  const wakeRef = useRef<(() => void) | null>(null);
+}) => {
+  const rootRef = useRef(null);
+  const lightRef = useRef(null);
+  const grainRef = useRef(null);
+  const edgeRef = useRef(null);
+  const wakeRef = useRef(null);
   const palette = THEMES[theme] ?? THEMES.dark;
   const color = spotlightColor ?? palette.light;
   const form = SHAPES.includes(shape) ? shape : 'circle';
-  const settings: Settings = {
+  const settings = {
     shape: form,
     fill: falloff(color, softness),
     edge: falloff(color, 1),
@@ -137,12 +104,12 @@ const SpotlightCard = ({
     const state = { x: 0, y: 0, presence: 0, flare: 0, time: Math.random() * 60, pressed: false, visible: true };
     const pointer = { x: 0, y: 0, active: false };
     const drawn = { light: '', edge: '', noise: '' };
-    let focus: Element | null = null;
+    let focus = null;
     let raf = 0;
     let last = 0;
     let alive = true;
 
-    const gradient = (s: Settings, size: number, x: number, y: number, stops: string) => {
+    const gradient = (s, size, x, y, stops) => {
       if (s.shape === 'beam') {
         const reach = Math.max(size * 0.6, y + size * 0.55);
         return `radial-gradient(${(size * 0.55).toFixed(1)}px ${reach.toFixed(1)}px at ${x.toFixed(1)}px 0px, ${stops})`;
@@ -150,7 +117,7 @@ const SpotlightCard = ({
       return `radial-gradient(circle ${size.toFixed(1)}px at ${x.toFixed(1)}px ${y.toFixed(1)}px, ${stops})`;
     };
 
-    const paint = (s: Settings) => {
+    const paint = (s) => {
       const size = s.size * (1 + 0.2 * state.flare);
       const boost = 1 + 0.7 * state.flare;
       const fill = gradient(s, size, state.x, state.y, s.fill);
@@ -174,7 +141,7 @@ const SpotlightCard = ({
       noise.style.opacity = String(state.presence * s.grain);
     };
 
-    const tick = (now: number) => {
+    const tick = (now) => {
       raf = 0;
       if (!alive) return;
       const s = settingsRef.current;
@@ -229,37 +196,37 @@ const SpotlightCard = ({
     };
     wakeRef.current = wake;
 
-    const onMove = (event: PointerEvent) => {
+    const onMove = (event) => {
       pointer.x = event.clientX;
       pointer.y = event.clientY;
       pointer.active = true;
-      if (state.presence > 0 || settingsRef.current.proximity > 0 || root.contains(event.target as Node | null)) wake();
+      if (state.presence > 0 || settingsRef.current.proximity > 0 || root.contains(event.target)) wake();
     };
-    const onOut = (event: PointerEvent) => {
+    const onOut = (event) => {
       if (event.relatedTarget) return;
       pointer.active = false;
       wake();
     };
-    const onDown = (event: PointerEvent) => {
+    const onDown = (event) => {
       pointer.x = event.clientX;
       pointer.y = event.clientY;
       pointer.active = true;
       state.pressed = true;
       wake();
     };
-    const onUp = (event: PointerEvent) => {
+    const onUp = (event) => {
       if (event.pointerType !== 'mouse') pointer.active = false;
       if (!state.pressed && event.pointerType === 'mouse') return;
       state.pressed = false;
       wake();
     };
-    const onFocusIn = (event: FocusEvent) => {
+    const onFocusIn = (event) => {
       if (!(event.target instanceof Element) || !event.target.matches(':focus-visible')) return;
       focus = event.target;
       wake();
     };
-    const onFocusOut = (event: FocusEvent) => {
-      if (root.contains(event.relatedTarget as Node | null)) return;
+    const onFocusOut = (event) => {
+      if (root.contains(event.relatedTarget)) return;
       focus = null;
       wake();
     };
@@ -302,14 +269,12 @@ const SpotlightCard = ({
     <div
       ref={rootRef}
       className={`${CARD}${className ? ` ${className}` : ''}`}
-      style={
-        {
-          '--spotlight-card-surface': palette.surface,
-          '--spotlight-card-border': palette.border,
-          '--spotlight-card-shadow': palette.shadow,
-          ...style
-        } as React.CSSProperties
-      }
+      style={{
+        '--spotlight-card-surface': palette.surface,
+        '--spotlight-card-border': palette.border,
+        '--spotlight-card-shadow': palette.shadow,
+        ...style
+      }}
       {...rest}
     >
       <span

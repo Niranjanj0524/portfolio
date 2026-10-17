@@ -3,18 +3,18 @@
 
 ## Context
 
-This is Vivek Patil's personal software developer portfolio.
+This is Niranjan Jagtap's personal software developer portfolio.
 
 Stack:
 - Next.js
-- TypeScript
+- JavaScript (no TypeScript)
 - Vercel
 - Personal portfolio
 - Developer projects, experience, skills, education and contact information
 
 Primary SEO goals:
-1. Rank for "Vivek Patil"
-2. Rank for "Vivek Patil software developer"
+1. Rank for "Niranjan Jagtap"
+2. Rank for "Niranjan Jagtap software developer"
 3. Make projects and experience discoverable
 4. Make the site technically excellent for Google
 5. Improve social sharing previews
@@ -33,8 +33,8 @@ Do NOT invent information, achievements, metrics, skills, companies or experienc
 Before changing anything, inspect:
 
 - `app/` routes
-- `layout.tsx`
-- all `page.tsx`
+- `app/layout.jsx`
+- all `app/page.jsx`
 - dynamic routes
 - existing metadata
 - existing `robots.txt`
@@ -59,21 +59,17 @@ Create/use one SEO configuration.
 
 Example:
 
-```ts
+```js
 export const siteConfig = {
-  name: "Vivek Patil",
-  url: process.env.NEXT_PUBLIC_SITE_URL!,
+  name: "Niranjan Jagtap",
+  url: "https://niranjanjagtap.me",
   description:
-    "Vivek Patil is a software developer focused on backend engineering, full-stack development, cloud infrastructure and scalable applications.",
-  author: "Vivek Patil",
+    "Niranjan Jagtap is a full stack developer skilled in React, Next.js, Express, Node.js, MongoDB and Tailwind CSS.",
+  author: "Niranjan Jagtap",
 };
 ````
 
-Add:
-
-```env
-NEXT_PUBLIC_SITE_URL=https://YOUR-DOMAIN.com
-```
+The domain is defined in one place: `lib/seo.js` (`SITE_URL`). Never hardcode it elsewhere.
 
 Use the real production domain.
 
@@ -89,10 +85,10 @@ Target:
 
 ```text
 Title:
-Vivek Patil — Software Developer
+Niranjan Jagtap — Full Stack Developer
 
 Description:
-Vivek Patil is a software developer focused on backend engineering, full-stack development, cloud infrastructure and scalable applications.
+Niranjan Jagtap is a full stack developer skilled in React, Next.js, Express, Node.js, MongoDB and Tailwind CSS.
 ```
 
 Use the actual portfolio content to improve the wording.
@@ -108,42 +104,20 @@ Ensure the homepage has exactly one primary H1.
 Preferred:
 
 ```text
-Vivek Patil — Software Developer
+Niranjan Jagtap
 ```
 
-The H1 must be visible HTML, not only rendered inside Canvas/WebGL.
+The site's single `<h1>` in `app/page.jsx` is the name. The role line sits under it as a separate element — do not fold keywords into the H1.
 
 ---
 
 # 5. Page-Specific Metadata
 
-Every important page must have a unique title and description.
+**This site is a single page.** There is one route (`/`), plus `robots.txt`, `sitemap.xml` and the 404 page. There are no `/about`, `/experience`, `/projects` or `/blog` routes — the sections are anchor-scroll targets on the homepage.
 
-Use:
+The homepage title and description (§3) are therefore the only page metadata, set once in `app/layout.jsx` from `lib/seo.js`.
 
-```text
-/about
-→ About Vivek Patil — Software Developer
-
-/experience
-→ Software Development Experience — Vivek Patil
-
-/projects
-→ Software Projects — Vivek Patil
-
-/projects/[slug]
-→ [Project Name] — Vivek Patil
-
-/blog
-→ Software Engineering Blog — Vivek Patil
-
-/blog/[slug]
-→ [Article Title] — Vivek Patil
-```
-
-Do not use the same title/description on every page.
-
-For dynamic routes use `generateMetadata()`.
+If project detail pages or a blog are ever added, each needs a unique title and description, generated with `generateMetadata()` for dynamic routes. Do not use the same title/description on every page.
 
 ---
 
@@ -156,14 +130,12 @@ Use the production domain.
 Examples:
 
 ```text
-https://YOUR-DOMAIN.com/
-https://YOUR-DOMAIN.com/projects
-https://YOUR-DOMAIN.com/projects/project-name
+https://niranjanjagtap.me/
+https://niranjanjagtap.me/robots.txt
+https://niranjanjagtap.me/sitemap.xml
 ```
 
-Do not canonicalize to Vercel preview URLs.
-
-Do not include tracking query parameters in canonicals.
+The canonical is set in `app/layout.jsx` (`alternates.canonical = "/"`, resolved against `metadataBase`). Do not canonicalize to Vercel preview URLs. Do not include tracking query parameters in canonicals.
 
 ---
 
@@ -172,7 +144,7 @@ Do not include tracking query parameters in canonicals.
 Create/use:
 
 ```text
-app/robots.ts
+app/robots.js
 ```
 
 Production should effectively contain:
@@ -181,12 +153,10 @@ Production should effectively contain:
 User-agent: *
 Allow: /
 
-Sitemap: https://YOUR-DOMAIN.com/sitemap.xml
+Sitemap: https://niranjanjagtap.me/sitemap.xml
 ```
 
-Replace the domain dynamically from `NEXT_PUBLIC_SITE_URL`.
-
-Do not accidentally block the entire website.
+The domain comes from `SITE_URL` in `lib/seo.js`. Do not accidentally block the entire website.
 
 ---
 
@@ -195,31 +165,16 @@ Do not accidentally block the entire website.
 Create/use:
 
 ```text
-app/sitemap.ts
+app/sitemap.js
 ```
 
 Include:
 
-* Homepage
-* About
-* Experience
-* Projects
-* Public project detail pages
-* Blog
-* Public blog articles
+* Homepage (`https://niranjanjagtap.me/`)
 
-Do NOT include:
+The site is a single page, so the sitemap has exactly one entry. Preview deployments return an empty sitemap so they never compete with production.
 
-* 404
-* admin
-* login
-* dashboard
-* private pages
-* API routes
-* drafts
-* nonexistent pages
-
-For dynamic projects/articles, generate sitemap entries from the actual data source.
+If project detail pages or articles are ever added, include them here — generated from the actual data source. Do NOT include 404, admin, login, dashboard, private pages, API routes, drafts or nonexistent pages.
 
 Only include publicly accessible, indexable URLs.
 
@@ -254,14 +209,10 @@ Add Open Graph metadata.
 Default image:
 
 ```text
-public/og-image.png
+public/me.jpeg
 ```
 
-Recommended:
-
-```text
-1200x630
-```
+Current size is 413x531 (portrait). That is above the 200x200 minimum and works, but a dedicated **1200x630** `public/og-image.png` would render far better in link previews. If one is added, point `siteConfig.image` at it in `lib/seo.js` and update the declared width/height there too.
 
 Include:
 
@@ -303,23 +254,23 @@ Use only real information.
 
 Example:
 
-```ts
+```js
 {
   "@context": "https://schema.org",
   "@type": "Person",
-  "name": "Vivek Patil",
+  "name": "Niranjan Jagtap",
   "url": siteUrl,
-  "jobTitle": "Software Developer",
+  "jobTitle": "Full Stack Developer",
   "sameAs": [
-    "REAL_GITHUB_URL",
-    "REAL_LINKEDIN_URL"
+    "https://github.com/niranjanj0524",
+    "https://www.linkedin.com/in/niranjan-jagtap-816243318/"
   ]
 }
 ```
 
-Only add social URLs that actually belong to Vivek.
+Already implemented in `lib/seo.js` (`personJsonLd`), rendered by `app/layout.jsx`.
 
-Do not invent profiles.
+Only add social URLs that actually belong to Niranjan. Do not invent profiles. LeetCode is at `https://leetcode.com/u/NiranjanJagtap/` and may be added to `sameAs` if desired.
 
 ---
 
@@ -327,42 +278,30 @@ Do not invent profiles.
 
 Add a simple `WebSite` schema where appropriate:
 
-```ts
+```js
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": "Vivek Patil",
+  "name": "Niranjan Jagtap",
   "url": siteUrl
 }
 ```
 
-Avoid unnecessary schema.
+Already implemented in `lib/seo.js` (`websiteJsonLd`). Avoid unnecessary schema.
 
 ---
 
 # 14. Project Pages
 
-Every important project should have a real URL if the existing application supports it.
-
-Example:
+**This site does not have project detail pages.** Projects are listed on the homepage (`projects` array in `app/page.jsx`) and link out to their live deployments or repositories:
 
 ```text
-/projects/veltos
-/projects/project-name
+Placement Portal        → https://coding-savvy-placement-portal.vercel.app/signup
+AI Resume Analyzer      → https://ai-resume-analyzer-nj.vercel.app/
+Farm Labor Booking      → (deploy pending — add href when live)
 ```
 
-A project page should contain useful real information:
-
-* Project name
-* What it does
-* Problem
-* Solution
-* Technologies
-* Architecture
-* Vivek's contribution
-* Results, only if truthful
-* GitHub link, if public
-* Live demo, if available
+If real project detail routes are ever added, each should contain useful real information: project name, what it does, problem, solution, technologies, architecture, Niranjan's contribution, results only if truthful, GitHub link if public, live demo if available.
 
 Do not create separate SEO pages with duplicate content.
 
@@ -370,16 +309,16 @@ Do not create separate SEO pages with duplicate content.
 
 # 15. Project Metadata
 
-Dynamic project pages must generate metadata from project data.
+Project detail pages do not exist (see §14), so there is no per-project metadata today. Project names and tech stacks live in the homepage content and are crawled as ordinary server-rendered HTML.
 
-Example:
+If detail pages are added, they must generate metadata from project data. Example:
 
 ```text
 Title:
-Veltos.ai — AI Game Generation Platform | Vivek Patil
+AI Resume Analyzer — Full Stack Project | Niranjan Jagtap
 
 Description:
-Veltos.ai is an AI-powered game generation platform built with modern web technologies and cloud infrastructure.
+AI-powered resume analyzer built with Next.js, Tailwind CSS, MongoDB and an AI API for instant resume feedback.
 ```
 
 Use the actual project details.
@@ -397,24 +336,9 @@ Most scalable
 
 # 16. Blog SEO
 
-If the portfolio has a blog:
+**This site has no blog.** Do not add one purely for SEO.
 
-Each article needs:
-
-* Unique title
-* Unique description
-* Canonical URL
-* Author
-* Published date
-* Modified date when actually updated
-* Open Graph image
-* Article JSON-LD where appropriate
-
-Use:
-
-```text
-/blog/[slug]
-```
+If a blog is ever genuinely added, each article needs a unique title, unique description, canonical URL, author, published date, modified date when actually updated, Open Graph image, and Article JSON-LD where appropriate. Use `/blog/[slug]`.
 
 Do not create AI-generated thin articles just for SEO.
 
@@ -424,30 +348,20 @@ Prefer genuine technical content based on actual development experience.
 
 # 17. Internal Linking
 
-Ensure important pages are connected.
-
-At minimum:
+This is a single-page site, so there are no routes to interlink. Internal linking means the nav and section anchors:
 
 ```text
-Home
- ├── About
- ├── Experience
- ├── Projects
- │    └── Project details
- └── Blog
-      └── Articles
+Home (#home)
+ ├── Experience (#experience)
+ ├── Projects (#projects)
+ ├── Skills (#skills)
+ ├── Education (#education)
+ └── Contact (#contact)
 ```
 
-Add relevant links between:
+The nav (`components/site-nav.jsx`) must keep its `id`s in sync with the sections in `app/page.jsx` — a mismatch silently breaks scrolling.
 
-* Projects ↔ Experience
-* Projects ↔ Blog
-* Blog ↔ Related projects
-* Homepage ↔ Important projects
-
-Use normal Next.js `<Link>` for internal navigation.
-
-Avoid JavaScript-only navigation when a normal link is appropriate.
+External links (LinkedIn, GitHub, LeetCode, project live sites) open in a new tab with `rel="noopener noreferrer"`.
 
 ---
 
@@ -489,9 +403,9 @@ Every meaningful image needs useful alt text.
 Examples:
 
 ```text
-Vivek Patil — Software Developer
-Veltos.ai game generation dashboard
-Project architecture diagram
+Niranjan Jagtap — Full Stack Developer
+Placement Portal interface
+AI Resume Analyzer result view
 ```
 
 Decorative images:
@@ -567,7 +481,7 @@ For example:
 
 must not return a normal 200 project page.
 
-Use Next.js `not-found.tsx` / `notFound()` where appropriate.
+Use Next.js `not-found.jsx` / `notFound()` where appropriate.
 
 ---
 
@@ -614,7 +528,7 @@ Do not require authentication for public portfolio pages.
 Choose one canonical domain:
 
 ```text
-https://YOUR-DOMAIN.com
+https://niranjanjagtap.me
 ```
 
 Ensure:
@@ -634,12 +548,12 @@ Avoid redirect chains.
 The homepage should naturally explain:
 
 ```text
-Who is Vivek?
-What does Vivek do?
-What technologies does he work with?
-What has he built?
-What experience does he have?
-How can someone contact him?
+Who is Niranjan?
+What does Niranjan do?
+What technologies do they work with?
+What have they built?
+What experience do they have?
+How can someone contact them?
 ```
 
 Use actual information from the portfolio.
@@ -655,20 +569,22 @@ Naturally mention technologies that are actually demonstrated by the portfolio.
 Examples, only if present:
 
 ```text
-TypeScript
 JavaScript
 Next.js
 React
 Node.js
-NestJS
-AWS
-DynamoDB
-PostgreSQL
-Redis
-Python
-Java
+Express.js
+Tailwind CSS
+MongoDB
+Mongoose
+Supabase
+Razorpay
+Socket.IO
 Docker
 CI/CD
+Python
+Java
+C++
 ```
 
 Do not add a technology to SEO metadata just because it is a popular keyword.
@@ -722,11 +638,10 @@ Use the existing Next.js/Vercel capabilities wherever possible.
 After implementation run the project's existing:
 
 ```bash
-npm run lint
 npm run build
 ```
 
-and typecheck if available.
+There is no lint or typecheck script — the project is plain JavaScript, and ESLint is not installed. Do not invent a lint command.
 
 Then verify:
 
@@ -739,13 +654,10 @@ Then verify:
 Also verify:
 
 ```text
-Homepage
-About
-Experience
-Projects
-At least one project detail page
-Blog/article if present
-Nonexistent URL
+Homepage (all sections render)
+/robots.txt (allows / in production)
+/sitemap.xml (one entry in production, empty in preview)
+A nonexistent URL → returns a real 404
 ```
 
 Check:
@@ -768,12 +680,11 @@ Check:
 Before finishing:
 
 ```text
-[ ] Correct production domain configured
+[ ] Correct production domain configured (SITE_URL in lib/seo.js)
 [ ] Homepage title
 [ ] Homepage description
 [ ] Homepage H1
-[ ] Unique metadata for important pages
-[ ] Canonical URLs
+[ ] Canonical URL
 [ ] robots.txt
 [ ] sitemap.xml
 [ ] Preview deployments noindex
@@ -782,21 +693,16 @@ Before finishing:
 [ ] OG image
 [ ] Person JSON-LD
 [ ] WebSite JSON-LD
-[ ] Project metadata
-[ ] Article metadata if blog exists
-[ ] Internal linking
+[ ] Section anchor links match nav ids
 [ ] Semantic HTML
 [ ] Image alt text
 [ ] next/image where appropriate
 [ ] Unnecessary "use client" audited
 [ ] Important content server-rendered
 [ ] Correct 404 behavior
-[ ] Private routes excluded/protected
-[ ] No broken internal links
 [ ] No duplicate metadata
 [ ] No keyword stuffing
 [ ] npm run build passes
-[ ] lint/typecheck passes
 ```
 
 ---

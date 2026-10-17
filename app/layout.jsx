@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { jsonLd, siteConfig, SITE_URL, isProduction } from "@/lib/seo";
 import "./globals.css";
@@ -11,12 +10,12 @@ const inter = Inter({
 });
 
 /* SEO.md §3 (copy) · §6 (canonical) · §9 (preview noindex)
-   §10 (Open Graph) · §11 (Twitter/X) — all driven from lib/seo.ts. */
-export const metadata: Metadata = {
+   §10 (Open Graph) · §11 (Twitter/X) — all driven from lib/seo.js. */
+export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: siteConfig.title,
-    template: "%s | Vivek Patil",
+    template: "%s | Niranjan Jagtap",
   },
   description: siteConfig.description,
   authors: [{ name: siteConfig.author, url: SITE_URL }],
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    siteName: "Vivek Patil Portfolio",
+    siteName: "Niranjan Jagtap Portfolio",
     title: siteConfig.title,
     description: siteConfig.description,
     images: [
@@ -50,17 +49,13 @@ export const metadata: Metadata = {
     images: [{ url: siteConfig.image.url, alt: siteConfig.image.alt }],
   },
   icons: {
-    icon: "/me.JPG",
-    shortcut: "/me.JPG",
-    apple: "/me.JPG",
+    icon: "/me.jpeg",
+    shortcut: "/me.jpeg",
+    apple: "/me.jpeg",
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>

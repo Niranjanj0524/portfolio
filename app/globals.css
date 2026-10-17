@@ -232,7 +232,7 @@
     padding-inline: 32px;
   }
 
-  @media (max-width: 600px) {
+  @media (max-width: 640px) {
     .wrap {
       padding-inline: 20px;
     }
@@ -270,6 +270,10 @@
     text-transform: uppercase;
     text-align: center;
     cursor: pointer;
+    /* Narrow phones: the address can be wider than the column —
+       clamp to the container and break the token rather than overflow. */
+    max-width: 100%;
+    overflow-wrap: anywhere;
     transition:
       background-color 0.2s ease,
       color 0.2s ease,

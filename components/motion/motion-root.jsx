@@ -6,30 +6,26 @@ import { gsap, ScrollTrigger, useGSAP, MOTION } from "@/lib/gsap";
 /* ------------------------------------------------------------------
    MotionRoot — the single client boundary for the whole page.
 
-   app/page.tsx stays a server component: its children stream in as
+   app/page.jsx stays a server component: its children stream in as
    server HTML and only this wrapper ships to the client. All GSAP
    runs inside one useGSAP() with `scope`, so selectors can't reach
    outside the tree and cleanup is automatic on unmount.
 
    Flash-free by construction: `.reveal` is hidden by CSS (gated on
-   the `.js` class set in layout.tsx before first paint), and every
+   the `.js` class set in layout.jsx before first paint), and every
    tween below is gsap.to() toward the visible state — never .from().
    If JS never runs, nothing is ever hidden.
    ------------------------------------------------------------------ */
 
-export default function MotionRoot({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const root = useRef<HTMLDivElement>(null);
+export default function MotionRoot({ children }) {
+  const root = useRef(null);
 
   useGSAP(
     () => {
       const el = root.current;
       if (!el) return;
 
-      /* Signal the inline failsafe in layout.tsx: GSAP booted, so the
+      /* Signal the inline failsafe in layout.jsx: GSAP booted, so the
          "reveal everything if GSAP never starts" timer can stand down. */
       el.setAttribute("data-gsap", "");
 
@@ -37,7 +33,7 @@ export default function MotionRoot({
 
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         /* ---------------- Hero — mount timeline ---------------- */
-        const hero = gsap.utils.toArray<HTMLElement>(".hero-anim", el);
+        const hero = gsap.utils.toArray(".hero-anim", el);
         if (hero.length) {
           gsap.to(hero, {
             opacity: 1,
@@ -50,7 +46,7 @@ export default function MotionRoot({
         }
 
         /* ---------- Entries — 540ms ease-out, 120ms cascade ---------- */
-        const reveals = gsap.utils.toArray<HTMLElement>(".reveal", el);
+        const reveals = gsap.utils.toArray(".reveal", el);
         if (reveals.length) {
           ScrollTrigger.batch(reveals, {
             start: "top 88%",
@@ -71,12 +67,12 @@ export default function MotionRoot({
         /* Transform/opacity only, scrubbed 1:1 to scroll. */
         const heroBand = el.querySelector("#home");
         if (heroBand) {
-          const layers: [string, number][] = [
+          const layers = [
             [".hero-portrait", 14],
             [".hero-copy", -6],
           ];
           layers.forEach(([selector, distance]) => {
-            const target = el.querySelector<HTMLElement>(selector);
+            const target = el.querySelector(selector);
             if (!target) return;
             gsap.to(target, {
               yPercent: distance,
@@ -92,7 +88,7 @@ export default function MotionRoot({
         }
 
         /* ---------------- Counters — tabular, no CLS ---------------- */
-        gsap.utils.toArray<HTMLElement>("[data-count]", el).forEach((node) => {
+        gsap.utils.toArray("[data-count]", el).forEach((node) => {
           const end = Number(node.dataset.count);
           const suffix = node.dataset.suffix ?? "";
           /* Explicit decimals, not derived from the float — `87.4` would
@@ -100,7 +96,7 @@ export default function MotionRoot({
           const decimals = Number(node.dataset.decimals ?? 0);
           if (Number.isNaN(end)) return;
 
-          const render = (value: number) => {
+          const render = (value) => {
             node.textContent = `${value.toFixed(decimals)}${suffix}`;
           };
 

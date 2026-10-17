@@ -8,23 +8,7 @@ import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
 
-export interface SplitTextProps {
-  text: string;
-  className?: string;
-  delay?: number;
-  duration?: number;
-  ease?: string | ((t: number) => number);
-  splitType?: 'chars' | 'words' | 'lines' | 'words, chars';
-  from?: gsap.TweenVars;
-  to?: gsap.TweenVars;
-  threshold?: number;
-  rootMargin?: string;
-  tag?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span';
-  textAlign?: React.CSSProperties['textAlign'];
-  onLetterAnimationComplete?: () => void;
-}
-
-const SplitText: React.FC<SplitTextProps> = ({
+const SplitText = ({
   text,
   className = '',
   delay = 50,
@@ -39,10 +23,10 @@ const SplitText: React.FC<SplitTextProps> = ({
   textAlign = 'center',
   onLetterAnimationComplete
 }) => {
-  const ref = useRef<HTMLParagraphElement>(null);
+  const ref = useRef(null);
   const animationCompletedRef = useRef(false);
   const onCompleteRef = useRef(onLetterAnimationComplete);
-  const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
 
   // Keep callback ref updated
   useEffect(() => {
@@ -64,9 +48,7 @@ const SplitText: React.FC<SplitTextProps> = ({
       if (!ref.current || !text || !fontsLoaded) return;
       // Prevent re-animation if already completed
       if (animationCompletedRef.current) return;
-      const el = ref.current as HTMLElement & {
-        _rbsplitInstance?: GSAPSplitText;
-      };
+      const el = ref.current;
 
       if (el._rbsplitInstance) {
         try {
@@ -86,10 +68,9 @@ const SplitText: React.FC<SplitTextProps> = ({
             ? `-=${Math.abs(marginValue)}${marginUnit}`
             : `+=${marginValue}${marginUnit}`;
       const start = `top ${startPct}%${sign}`;
-      let targets: Element[] = [];
-      const assignTargets = (self: GSAPSplitText) => {
-        if (splitType.includes('chars') && (self as GSAPSplitText).chars?.length)
-          targets = (self as GSAPSplitText).chars;
+      let targets = [];
+      const assignTargets = (self) => {
+        if (splitType.includes('chars') && self.chars?.length) targets = self.chars;
         if (!targets.length && splitType.includes('words') && self.words.length) targets = self.words;
         if (!targets.length && splitType.includes('lines') && self.lines.length) targets = self.lines;
         if (!targets.length) targets = self.chars || self.words || self.lines;
@@ -102,7 +83,7 @@ const SplitText: React.FC<SplitTextProps> = ({
         wordsClass: 'split-word',
         charsClass: 'split-char',
         reduceWhiteSpace: false,
-        onSplit: (self: GSAPSplitText) => {
+        onSplit: (self) => {
           assignTargets(self);
           return gsap.fromTo(
             targets,
@@ -158,7 +139,7 @@ const SplitText: React.FC<SplitTextProps> = ({
   );
 
   const renderTag = () => {
-    const style: React.CSSProperties = {
+    const style = {
       textAlign,
       wordWrap: 'break-word',
       willChange: 'transform, opacity'

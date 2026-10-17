@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Niranjan Jagtap — Portfolio
+
+Personal portfolio site: [niranjanjagtap.me](https://niranjanjagtap.me). A single-page Next.js site covering experience, projects, skills, education and contact.
+
+## Stack
+
+- [Next.js 15](https://nextjs.org) (App Router) + React 19
+- **Plain JavaScript** — no TypeScript, no ESLint, no tests
+- Tailwind CSS v4 (no `tailwind.config`; tokens live in `app/globals.css`)
+- [GSAP](https://gsap.com) + ScrollTrigger for scroll reveals and counters
+- [Inter](https://vercel.com/font) via `next/font` (the DESIGN.md-sanctioned stand-in for D-DIN)
+- Deployed on Vercel
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To build for production:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Where the content lives
 
-To learn more about Next.js, take a look at the following resources:
+Everything on the page is plain data — no CMS, no markdown:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| File | What's in it |
+| --- | --- |
+| `app/page.jsx` | All content arrays (`LINKS`, `experience`, `projects`, `skillGroups`, `education`) and the hero, contact and footer markup |
+| `lib/seo.js` | The domain (`SITE_URL`), metadata copy, `isProduction` and the JSON-LD graphs — read by `layout.jsx`, `robots.js` and `sitemap.js` |
+| `components/site-nav.jsx` | Top nav + mobile hamburger menu |
+| `components/motion/motion-root.jsx` | GSAP entry reveals, scroll-triggered counters, hero parallax |
+| `app/globals.css` | Design tokens and the type scale |
+| `public/me.jpeg` | Portrait (413×531) |
+| `public/NiranjanJagtapResume.pdf` | Download CV target |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+To update your details, edit the arrays at the top of `app/page.jsx` and the copy in `lib/seo.js`. Keep the section `id`s in `page.jsx` in sync with `NAV_ITEMS`/`ALL_ITEMS` in `site-nav.jsx` — a mismatch silently breaks nav scrolling.
 
-## Deploy on Vercel
+## Project structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+app/
+  layout.jsx       # metadata, fonts, JSON-LD
+  page.jsx         # the entire site
+  not-found.jsx    # 404
+  robots.js        # robots.txt
+  sitemap.js       # sitemap.xml
+  globals.css      # design system
+components/
+  site-nav.jsx
+  motion/motion-root.jsx
+lib/
+  seo.js
+  utils.js
+public/
+  me.jpeg
+  NiranjanJagtapResume.pdf
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Design
+
+The visual language is documented in [`DESIGN.md`](./DESIGN.md): monochrome dark, zero accent colors, flat surfaces, uppercase display type with positive tracking, 1px hairlines and ghost-outline pill CTAs. Read it before adding any color, radius, shadow or animation.
+
+The SEO rules live in [`SEO.md`](./SEO.md).
+
+## Deploy
+
+Deployed on [Vercel](https://vercel.com) with no extra configuration (`next.config.mjs` is empty). Preview deployments automatically get `noindex` and a disallowing `robots.txt` so they never compete with production — see `isProduction` in `lib/seo.js`.

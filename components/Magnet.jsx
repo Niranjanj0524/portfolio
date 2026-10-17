@@ -1,70 +1,19 @@
 'use client';
 
-import { useEffect, useRef, type HTMLAttributes, type ReactNode } from 'react';
-
-export type MagnetAxis = 'both' | 'x' | 'y';
-
-export interface MagnetSpring {
-  stiffness?: number;
-  damping?: number;
-  mass?: number;
-}
-
-export interface MagnetProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-  padding?: number;
-  disabled?: boolean;
-  magnetStrength?: number;
-  maxOffset?: number;
-  exclusive?: boolean;
-  axis?: MagnetAxis;
-  tilt?: number;
-  scale?: number;
-  spring?: MagnetSpring;
-  onActiveChange?: (active: boolean) => void;
-  wrapperClassName?: string;
-  innerClassName?: string;
-}
-
-type Motion = { x: number; y: number; tiltX: number; tiltY: number; scale: number };
-
-type Point = { x: number; y: number };
-
-type Settings = {
-  padding: number;
-  disabled: boolean;
-  strength: number;
-  maxOffset?: number;
-  exclusive: boolean;
-  axis: MagnetAxis;
-  tilt: number;
-  scale: number;
-  stiffness: number;
-  damping: number;
-  mass: number;
-  onActiveChange?: (active: boolean) => void;
-};
-
-type Entry = {
-  wrapper: HTMLDivElement;
-  settings: { current: Settings };
-  reduce: boolean;
-  wake: () => void;
-  active: boolean;
-};
+import { useEffect, useRef } from 'react';
 
 const DEFAULT_SPRING = { stiffness: 170, damping: 16, mass: 1 };
 
-const smoothstep = (edge0: number, edge1: number, value: number) => {
+const smoothstep = (edge0, edge1, value) => {
   const t = Math.min(1, Math.max(0, (value - edge0) / (edge1 - edge0)));
   return t * t * (3 - 2 * t);
 };
 
-const registry = new Set<Entry>();
-const field: { pointer: Point | null; owner: Entry | null } = { pointer: null, owner: null };
-let detach: (() => void) | null = null;
+const registry = new Set();
+const field = { pointer: null, owner: null };
+let detach = null;
 
-const reach = (rect: DOMRect, pointer: Point) => {
+const reach = (rect, pointer) => {
   const dx = pointer.x - (rect.left + rect.width / 2);
   const dy = pointer.y - (rect.top + rect.height / 2);
   const outside = Math.hypot(Math.max(0, Math.abs(dx) - rect.width / 2), Math.max(0, Math.abs(dy) - rect.height / 2));
@@ -72,12 +21,12 @@ const reach = (rect: DOMRect, pointer: Point) => {
 };
 
 const arbitrate = () => {
-  let winner: Entry | null = null;
+  let winner = null;
   let nearest = Infinity;
   let closest = Infinity;
   for (const entry of registry) {
     const s = entry.settings.current;
-    let near: { dx: number; dy: number; outside: number } | null = null;
+    let near = null;
     if (field.pointer && !s.disabled && !entry.reduce) {
       near = reach(entry.wrapper.getBoundingClientRect(), field.pointer);
       if (near.outside > s.padding) near = null;
@@ -101,7 +50,7 @@ const arbitrate = () => {
 };
 
 const attach = () => {
-  const onPointerMove = (event: PointerEvent) => {
+  const onPointerMove = (event) => {
     if (event.pointerType === 'touch') return;
     field.pointer = { x: event.clientX, y: event.clientY };
     arbitrate();
@@ -138,11 +87,11 @@ const Magnet = ({
   innerClassName = '',
   style,
   ...props
-}: MagnetProps) => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const wakeRef = useRef<(() => void) | null>(null);
-  const settings: Settings = {
+}) => {
+  const wrapperRef = useRef(null);
+  const innerRef = useRef(null);
+  const wakeRef = useRef(null);
+  const settings = {
     padding: Math.max(0, padding),
     disabled,
     strength: Math.max(0.1, magnetStrength),
@@ -165,16 +114,16 @@ const Magnet = ({
     if (!wrapper || !inner) return undefined;
 
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    const current: Motion = { x: 0, y: 0, tiltX: 0, tiltY: 0, scale: 1 };
-    const velocity: Motion = { x: 0, y: 0, tiltX: 0, tiltY: 0, scale: 0 };
+    const current = { x: 0, y: 0, tiltX: 0, tiltY: 0, scale: 1 };
+    const velocity = { x: 0, y: 0, tiltX: 0, tiltY: 0, scale: 0 };
     let active = false;
     let raf = 0;
     let last = 0;
 
-    const solve = (target: Motion, dt: number) => {
+    const solve = (target, dt) => {
       const s = settingsRef.current;
       let resting = true;
-      (Object.keys(current) as (keyof Motion)[]).forEach(key => {
+      Object.keys(current).forEach(key => {
         const force = s.stiffness * (target[key] - current[key]) - s.damping * velocity[key];
         velocity[key] += (force / s.mass) * dt;
         current[key] += velocity[key] * dt;
@@ -186,7 +135,7 @@ const Magnet = ({
 
     const measure = () => {
       const s = settingsRef.current;
-      const target: Motion = { x: 0, y: 0, tiltX: 0, tiltY: 0, scale: 1 };
+      const target = { x: 0, y: 0, tiltX: 0, tiltY: 0, scale: 1 };
       if (s.disabled || reduce || !field.pointer) return { target, engaged: false };
       if (s.exclusive && field.owner !== entry) return { target, engaged: false };
       const rect = wrapper.getBoundingClientRect();
@@ -220,7 +169,7 @@ const Magnet = ({
       }${Math.abs(scale - 1) > 0.0005 ? ` scale(${scale.toFixed(4)})` : ''}`;
     };
 
-    const frame = (now: number) => {
+    const frame = (now) => {
       raf = 0;
       const dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
       last = now;
@@ -236,7 +185,7 @@ const Magnet = ({
       let resting = true;
       for (let i = 0; i < steps; i++) resting = solve(target, dt / steps);
       if (resting) {
-        (Object.keys(current) as (keyof Motion)[]).forEach(key => {
+        Object.keys(current).forEach(key => {
           current[key] = target[key];
           velocity[key] = 0;
         });
@@ -250,7 +199,7 @@ const Magnet = ({
       if (!raf) raf = requestAnimationFrame(frame);
     }
 
-    const entry: Entry = { wrapper, settings: settingsRef, reduce, wake, active: false };
+    const entry = { wrapper, settings: settingsRef, reduce, wake, active: false };
     registry.add(entry);
     if (!detach) detach = attach();
     wakeRef.current = () => {
